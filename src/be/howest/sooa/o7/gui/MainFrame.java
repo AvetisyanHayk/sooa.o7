@@ -2,7 +2,7 @@ package be.howest.sooa.o7.gui;
 
 import be.howest.sooa.o7.data.PokemonRepository;
 import be.howest.sooa.o7.domain.Encounter;
-import be.howest.sooa.o7.domain.Pokemon;
+import be.howest.sooa.o7.domain.Trainer;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -10,9 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
@@ -32,6 +30,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     private transient PokemonRepository pokemonRepo;
     private EncounterDialog encounterDialog;
+    private transient Trainer trainer;
 
     /**
      * Creates new form MainFrame
@@ -52,11 +51,16 @@ public class MainFrame extends javax.swing.JFrame {
         addDialogKeyListener(encounterDialog);
         addListeners();
     }
+    
+    public void setTrainer(Trainer trainer) {
+        this.trainer = trainer;
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Listeners">
     private void addListeners() {
         addAddEncountersButtonActionListener();
         addExitButtonActionListener();
+        addTrainerButtonActionListener();
     }
 
     private void addAddEncountersButtonActionListener() {
@@ -68,6 +72,13 @@ public class MainFrame extends javax.swing.JFrame {
     private void addExitButtonActionListener() {
         exitButton.addActionListener((ActionEvent e) -> {
             close();
+        });
+    }
+    
+    private void addTrainerButtonActionListener() {
+        trainerButton.addActionListener((ActionEvent e) -> {
+            JOptionPane.showMessageDialog(this, trainer.toString(), "Trainer",
+                    JOptionPane.PLAIN_MESSAGE);
         });
     }
 
@@ -95,7 +106,7 @@ public class MainFrame extends javax.swing.JFrame {
         encountersList.setModel(model);
         encounterDialog.setVisible(false);
     }
-    
+
     public void loadPokemons() {
         encounterDialog.loadPokemons(pokemonRepo.findAll());
     }
@@ -129,6 +140,13 @@ public class MainFrame extends javax.swing.JFrame {
         dialog.setVisible(true);
     }
 
+    private void selectTrainer() {
+        SelectTrainerDialog dialog = new SelectTrainerDialog(this);
+        centerScreen(dialog);
+        addDialogKeyListener(dialog);
+        dialog.setVisible(true);
+    }
+
     public void close() {
         setVisible(false);
         dispose();
@@ -158,6 +176,7 @@ public class MainFrame extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         encountersList = new javax.swing.JList<>();
         exitButton = new javax.swing.JButton();
+        trainerButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Pokedex");
@@ -169,6 +188,8 @@ public class MainFrame extends javax.swing.JFrame {
 
         exitButton.setText("Exit");
 
+        trainerButton.setText("Trainer...");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -179,6 +200,8 @@ public class MainFrame extends javax.swing.JFrame {
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addEncounterButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(trainerButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(exitButton)))
                 .addContainerGap())
@@ -191,7 +214,8 @@ public class MainFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addEncounterButton)
-                    .addComponent(exitButton))
+                    .addComponent(exitButton)
+                    .addComponent(trainerButton))
                 .addContainerGap())
         );
 
@@ -231,6 +255,7 @@ public class MainFrame extends javax.swing.JFrame {
             newMainFrame.centerScreen();
             newMainFrame.setVisible(true);
             newMainFrame.connectToDatabase();
+            newMainFrame.selectTrainer();
         });
     }
 
@@ -239,6 +264,7 @@ public class MainFrame extends javax.swing.JFrame {
     private javax.swing.JList<Encounter> encountersList;
     private javax.swing.JButton exitButton;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JButton trainerButton;
     // End of variables declaration//GEN-END:variables
 
     // <editor-fold defaultstate="collapsed" desc="Custom Listeners, Actions, Models">

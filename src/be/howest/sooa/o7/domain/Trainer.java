@@ -11,6 +11,8 @@ import java.util.Objects;
  * @author Hayk
  */
 public class Trainer {
+    
+    public static final int INITIAL_BALLS = 3;
 
     private final String name;
     private int pokeballs;
