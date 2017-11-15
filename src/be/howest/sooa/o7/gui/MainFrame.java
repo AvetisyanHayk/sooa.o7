@@ -2,6 +2,7 @@ package be.howest.sooa.o7.gui;
 
 import be.howest.sooa.o7.data.PokemonRepository;
 import be.howest.sooa.o7.domain.Encounter;
+import be.howest.sooa.o7.domain.Pokemon;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -9,7 +10,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractAction;
@@ -26,10 +29,9 @@ import javax.swing.ListModel;
  * @author Hayk
  */
 public class MainFrame extends javax.swing.JFrame {
-    
+
     private transient PokemonRepository pokemonRepo;
     private EncounterDialog encounterDialog;
-    private final Set<Encounter> encounters = new TreeSet<>();
 
     /**
      * Creates new form MainFrame
@@ -37,12 +39,12 @@ public class MainFrame extends javax.swing.JFrame {
     public MainFrame() {
         initComponents();
     }
-    
+
     public void confirmAuthentication() {
         pokemonRepo = new PokemonRepository();
         init();
     }
-    
+
     public void init() {
         encounterDialog = new EncounterDialog(this);
         encounterDialog.loadPokemons(pokemonRepo.findAll());
@@ -52,23 +54,23 @@ public class MainFrame extends javax.swing.JFrame {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Listeners">
-     private void addListeners() {
+    private void addListeners() {
         addAddEncountersButtonActionListener();
         addExitButtonActionListener();
     }
-    
+
     private void addAddEncountersButtonActionListener() {
         addEncounterButton.addActionListener((ActionEvent e) -> {
             encounterDialog.setVisible(true);
         });
     }
-    
+
     private void addExitButtonActionListener() {
         exitButton.addActionListener((ActionEvent e) -> {
             close();
         });
     }
-    
+
     public void addDialogKeyListener(JDialog dialog) {
         KeyStroke escapeStroke
                 = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
@@ -83,17 +85,21 @@ public class MainFrame extends javax.swing.JFrame {
     // </editor-fold>
     //
     // <editor-fold defaultstate="collapsed" desc="Data Manipulation">
-    
+
     // </editor-fold>
     //
     // <editor-fold defaultstate="collapsed" desc="Fill, Clear, Reset, etc.">
     public void addEncounter(Encounter encounter) {
-        encounters.add(encounter);
         EncountersListModel model = new EncountersListModel(encountersList.getModel());
         model.addEncounter(encounter);
         encountersList.setModel(model);
         encounterDialog.setVisible(false);
     }
+    
+    public void loadPokemons() {
+        encounterDialog.loadPokemons(pokemonRepo.findAll());
+    }
+
     // </editor-fold>
     //
     // <editor-fold defaultstate="collapsed" desc="Custom Functions">
@@ -132,10 +138,11 @@ public class MainFrame extends javax.swing.JFrame {
         JOptionPane.showMessageDialog(this, message, "Warning",
                 JOptionPane.WARNING_MESSAGE);
     }
-    
+
     public boolean isConnected() {
         return pokemonRepo != null;
     }
+
     // </editor-fold>
     //
     /**
@@ -180,8 +187,8 @@ public class MainFrame extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 244, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addEncounterButton)
                     .addComponent(exitButton))
@@ -249,15 +256,15 @@ public class MainFrame extends javax.swing.JFrame {
                     dialog, WindowEvent.WINDOW_CLOSING));
         }
     }
-    
+
     private static class EncountersListModel extends AbstractListModel {
 
         final Set<Encounter> encounters = new TreeSet<>();
-        
+
         EncountersListModel() {
             super();
         }
-        
+
         EncountersListModel(Set<Encounter> encounters) {
             super();
             if (encounters != null) {
@@ -266,7 +273,7 @@ public class MainFrame extends javax.swing.JFrame {
                 });
             }
         }
-        
+
         EncountersListModel(ListModel<Encounter> model) {
             super();
             if (model != null) {
@@ -275,7 +282,7 @@ public class MainFrame extends javax.swing.JFrame {
                 }
             }
         }
-        
+
         @Override
         public int getSize() {
             return encounters.size();
@@ -285,17 +292,17 @@ public class MainFrame extends javax.swing.JFrame {
         public Encounter getElementAt(int index) {
             return encounters.toArray(new Encounter[getSize()])[index];
         }
-        
+
         public Set<Encounter> getEncounters() {
             return Collections.unmodifiableSet(encounters);
         }
-        
+
         public void addEncounter(Encounter encounter) {
             if (encounter != null) {
                 encounters.add(encounter);
             }
         }
-        
+
     }
     // </editor-fold>
 

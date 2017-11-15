@@ -1,5 +1,7 @@
 package be.howest.sooa.o7.domain;
 
+import be.howest.sooa.o7.gui.ImagePanel;
+import be.howest.sooa.o7.gui.ImageType;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -17,6 +19,7 @@ public class Pokemon implements Comparable<Pokemon> {
     private final int baseExperience;
     private final int order;
     private final boolean _default;
+    private String imagePath;
 
     public Pokemon(long id, String name, int speciesId, int height, int weight,
             int baseExperience, int order, boolean _default) {
@@ -38,6 +41,14 @@ public class Pokemon implements Comparable<Pokemon> {
         return name;
     }
 
+    public String getImagePath() {
+        return imagePath;
+    }
+    
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+    
     public String getCapitalizedName() {
         if (name != null && !"".equals(name)) {
             StringBuilder sb = new StringBuilder();

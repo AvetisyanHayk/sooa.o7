@@ -7,19 +7,34 @@ import java.util.Objects;
  * @author Hayk
  */
 public class Encounter implements Comparable<Encounter> {
+
+    private final long id;
     private final Pokemon pokemon;
     private final Location location;
-    
+
     public Encounter(Pokemon pokemon, int x, int y) {
-        this(pokemon, new Location(x, y));
+        this(0L, pokemon, x, y);
     }
-    
+
+    public Encounter(long id, Pokemon pokemon, int x, int y) {
+        this(id, pokemon, new Location(x, y));
+    }
+
     public Encounter(Pokemon pokemon, Location location) {
+        this(0L, pokemon, location);
+    }
+
+    public Encounter(long id, Pokemon pokemon, Location location) {
         if (location == null) {
             location = new Location();
         }
         this.pokemon = pokemon;
         this.location = location;
+        this.id = id;
+    }
+
+    public long getId() {
+        return id;
     }
 
     public Pokemon getPokemon() {
@@ -29,11 +44,11 @@ public class Encounter implements Comparable<Encounter> {
     public Location getLocation() {
         return location;
     }
-    
+
     public int getX() {
         return location.getX();
     }
-    
+
     public int getY() {
         return location.getY();
     }
