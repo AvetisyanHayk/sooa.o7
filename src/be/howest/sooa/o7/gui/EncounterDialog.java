@@ -4,7 +4,6 @@ import be.howest.sooa.o7.domain.EncounterValidation;
 import be.howest.sooa.o7.domain.Pokemon;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
@@ -68,7 +67,11 @@ public class EncounterDialog extends javax.swing.JDialog {
     }
 
     private void addPokemonsItemListener() {
-        pokemonsList.addItemListener(new PokemonListItemListener(this));
+        pokemonsList.addItemListener((ItemEvent e) -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                fillDetails();
+            }
+        });
     }
     
     private void addWithImageCheckBoxListener() {
@@ -85,7 +88,6 @@ public class EncounterDialog extends javax.swing.JDialog {
 
     public void loadPokemons(List<Pokemon> pokemons) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
-        model.addElement(null);
         pokemons.forEach((pokemon) -> {
             String imagePath = ImagePanel.getImagePathFor(pokemon, ImageType.GIF);
             boolean withImage = withImageCheckBox.isSelected();
@@ -105,10 +107,9 @@ public class EncounterDialog extends javax.swing.JDialog {
 
     private void reset() {
         pokemonsList.setSelectedIndex(0);
-        fillDetails("", "", "", "");
+        fillDetails();
         locationXField.setText("");
         locationYField.setText("");
-        removeImage();
     }
 
     private void fillDetails() {
@@ -128,8 +129,8 @@ public class EncounterDialog extends javax.swing.JDialog {
     private void removeImage() {
         if (imagePanel != null) {
             imageContainer.remove(imagePanel);
-            imageContainer.repaint();
         }
+        imageContainer.repaint();
         imagePanel = null;
     }
 
@@ -354,22 +355,5 @@ public class EncounterDialog extends javax.swing.JDialog {
     private javax.swing.JLabel weightLabel;
     private javax.swing.JCheckBox withImageCheckBox;
     // End of variables declaration//GEN-END:variables
-
-    private static class PokemonListItemListener implements ItemListener {
-
-        final EncounterDialog dialog;
-
-        PokemonListItemListener(EncounterDialog dialog) {
-            this.dialog = dialog;
-        }
-
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-            if (e.getStateChange() == ItemEvent.SELECTED) {
-                dialog.fillDetails();
-            }
-        }
-
-    }
 
 }
