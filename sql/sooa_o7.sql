@@ -18,6 +18,33 @@ USE `sooa_o7`;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Table structure for table `encounter`
+--
+
+DROP TABLE IF EXISTS `encounter`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `encounter` (
+  `id` int(9) unsigned NOT NULL AUTO_INCREMENT,
+  `pokemon_id` int(9) unsigned NOT NULL,
+  `x` smallint(6) NOT NULL,
+  `y` smallint(6) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_encounter$pokemon_id_idx` (`pokemon_id`),
+  CONSTRAINT `fk_encounter$pokemon_id` FOREIGN KEY (`pokemon_id`) REFERENCES `pokemon` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `encounter`
+--
+
+LOCK TABLES `encounter` WRITE;
+/*!40000 ALTER TABLE `encounter` DISABLE KEYS */;
+/*!40000 ALTER TABLE `encounter` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pokemon`
 --
 
@@ -25,7 +52,7 @@ DROP TABLE IF EXISTS `pokemon`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pokemon` (
-  `id` int(11) NOT NULL,
+  `id` int(9) unsigned NOT NULL AUTO_INCREMENT,
   `identifier` varchar(45) NOT NULL,
   `species_id` int(11) NOT NULL,
   `height` int(11) NOT NULL,
@@ -35,7 +62,7 @@ CREATE TABLE `pokemon` (
   `is_default` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `identifier_UNIQUE` (`identifier`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=10091 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -57,4 +84,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-11-15 18:14:51
+-- Dump completed on 2017-11-15 23:38:28
