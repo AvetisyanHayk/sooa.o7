@@ -52,6 +52,10 @@ public class MainFrame extends javax.swing.JFrame {
         addListeners();
     }
     
+    public Trainer getTrainer() {
+        return trainer;
+    }
+    
     public void setTrainer(Trainer trainer) {
         this.trainer = trainer;
     }
@@ -114,7 +118,7 @@ public class MainFrame extends javax.swing.JFrame {
     // </editor-fold>
     //
     // <editor-fold defaultstate="collapsed" desc="Custom Functions">
-    private void centerScreen(Window window) {
+    public void centerScreen(Window window) {
         final Toolkit toolkit = Toolkit.getDefaultToolkit();
         final Dimension screenSize = toolkit.getScreenSize();
         final int x = (screenSize.width - window.getWidth()) / 2;
@@ -140,7 +144,7 @@ public class MainFrame extends javax.swing.JFrame {
         dialog.setVisible(true);
     }
 
-    private void selectTrainer() {
+    public void selectTrainer() {
         SelectTrainerDialog dialog = new SelectTrainerDialog(this);
         centerScreen(dialog);
         addDialogKeyListener(dialog);
@@ -255,7 +259,6 @@ public class MainFrame extends javax.swing.JFrame {
             newMainFrame.centerScreen();
             newMainFrame.setVisible(true);
             newMainFrame.connectToDatabase();
-            newMainFrame.selectTrainer();
         });
     }
 

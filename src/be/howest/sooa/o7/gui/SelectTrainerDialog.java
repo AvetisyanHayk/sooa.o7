@@ -1,14 +1,11 @@
 package be.howest.sooa.o7.gui;
 
 import be.howest.sooa.o7.domain.Trainer;
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JLabel;
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 
 /**
  *
@@ -18,12 +15,13 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
 
     private final MainFrame frame;
     private final static String TRAINERS_PATH = "trainers";
+    private String selectedTrainer;
 
     public SelectTrainerDialog(MainFrame frame) {
         super(frame, true);
         this.frame = frame;
         initComponents();
-        test();
+        fillTrainersList();
         addListeners();
     }
 
@@ -41,7 +39,14 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
     }
 
     private void addEditButtonActionListener() {
-
+        editButton.addActionListener((ActionEvent e) -> {
+            String trainerName = (String) trainersList.getSelectedItem();
+            JDialog dialog = new TrainerDialog(this, trainerName);
+            dialog.setTitle("Edit Trainer");
+            frame.centerScreen(dialog);
+            frame.addDialogKeyListener(dialog);
+            dialog.setVisible(true);
+        });
     }
 
     private void addAddButtonActionListener() {
@@ -67,36 +72,48 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
         });
     }
 
-    private boolean showAddTrainerDialog() {
+    private void showAddTrainerDialog() {
+        JDialog dialog = new TrainerDialog(this);
+        dialog.setTitle("Add Trainer");
+        frame.centerScreen(dialog);
+        frame.addDialogKeyListener(dialog);
+        dialog.setVisible(true);
+    }
+
+    public boolean saveTrainer(String newTrainer) {
         boolean success = false;
-        Object[] options = {"Save Trainer", "Cancel"};
-        JPanel panel = new JPanel();
-        JLabel label = new JLabel("Name");
-        JTextField name = new JTextField();
-        panel.setLayout(new BorderLayout());
-        panel.add(label, BorderLayout.NORTH);
-        panel.add(name, BorderLayout.CENTER);
-        Object message = "Name";
-        int result = JOptionPane.showOptionDialog(this, panel,
-                "New Trainer", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, "N232");
-        String trainerName = name.getText().trim();
-        if (result == 0) {
-            if (!"".equals(trainerName)) {
-                File trainerDirectory = new File(TRAINERS_PATH + "/" + trainerName);
-                if (!trainerDirectory.exists()) {
-                    success = trainerDirectory.mkdir();
-                    test();
-                    trainersList.setSelectedItem(trainerName);
-                }
+        if (!"".equals(newTrainer)) {
+            File trainerDirectory = new File(TRAINERS_PATH + "/" + newTrainer);
+            selectedTrainer = newTrainer;
+            if (!trainerDirectory.exists()) {
+                success = trainerDirectory.mkdir();
+                fillTrainersList();
             } else {
-                JOptionPane.showMessageDialog(this, "Invalid trainer name. Try again, please", "Warning", JOptionPane.WARNING_MESSAGE, null);
-            showAddTrainerDialog();
+                showWarning("Trainer " + newTrainer + " already exists");
             }
+            trainersList.setSelectedItem(newTrainer);
         }
         return success;
     }
 
-    private boolean test() {
+    public boolean saveTrainer(String oldTrainer, String newTrainer) {
+        boolean success = false;
+        if (!"".equals(newTrainer) && !"".equals(oldTrainer)) {
+            File trainerDirectory = new File(TRAINERS_PATH + "/" + oldTrainer);
+            File newTrainerDirectory = new File(TRAINERS_PATH + "/" + newTrainer);
+            selectedTrainer = newTrainer;
+            if (trainerDirectory.exists() && !newTrainerDirectory.exists()) {
+                success = trainerDirectory.renameTo(newTrainerDirectory);
+                fillTrainersList();
+            } else {
+                showWarning("Trainer " + newTrainer + " already exists");
+            }
+            trainersList.setSelectedItem(newTrainer);
+        }
+        return success;
+    }
+
+    private boolean fillTrainersList() {
         boolean success = false;
         String path = "trainers";
         File trainersDirectory = new File(path);
@@ -104,18 +121,20 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
             String[] trainers = trainersDirectory
                     .list((File current, String name1)
                             -> new File(current, name1).isDirectory());
-            if (trainers.length == 0) {
-                // ask to fill in name
+            if (trainers.length != 0) {
+                showAddTrainerDialog();
             } else {
                 DefaultComboBoxModel model = new DefaultComboBoxModel();
                 for (String trainer : trainers) {
                     model.addElement(trainer);
                 }
                 trainersList.setModel(model);
+                String selected = (String) trainersList.getSelectedItem();
+                editButton.setEnabled(selected != null && !"".equals(selected));
             }
         } else {
             success = trainersDirectory.mkdir();
-            // ask to fill in name
+            showAddTrainerDialog();
         }
         return success;
     }
@@ -124,7 +143,7 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
         JOptionPane.showMessageDialog(this, message, "Warning",
                 JOptionPane.WARNING_MESSAGE);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

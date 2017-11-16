@@ -2,6 +2,7 @@ package be.howest.sooa.o7.gui;
 
 import be.howest.sooa.o7.data.AbstractRepository;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.Locale;
 import javax.swing.JOptionPane;
@@ -23,18 +24,34 @@ public class DatabaseConnectionDialog extends javax.swing.JDialog {
 
     private void addListeners() {
         frame.addDialogKeyListener(this);
+        addExitButtonActionListener();
+        addConnectButtonActionListener();
+        addTextFieldApplyOnEnterActionListener();
+    }
+
+    private void addExitButtonActionListener() {
         exitButton.addActionListener((ActionEvent e) -> {
             frame.close();
         });
+    }
+
+    private void addConnectButtonActionListener() {
         connectButton.addActionListener((ActionEvent e) -> {
             connectButton.setEnabled(false);
             connectToDatabase();
         });
-        passwordField.addActionListener((ActionEvent e) -> {
-            connectButton.doClick();
-        });
     }
-    
+
+    private void addTextFieldApplyOnEnterActionListener() {
+        ActionListener actionListener
+                = new TextFieldApplyOnEnterActionListener(this);
+        hostnameField.addActionListener(actionListener);
+        portField.addActionListener(actionListener);
+        databaseField.addActionListener(actionListener);
+        usernameField.addActionListener(actionListener);
+        passwordField.addActionListener(actionListener);
+    }
+
     private void connectToDatabase() {
         try {
             String driver = driversList.getSelectedItem().toString().toLowerCase(Locale.ENGLISH);
@@ -51,6 +68,7 @@ public class DatabaseConnectionDialog extends javax.swing.JDialog {
             frame.confirmAuthentication();
             setVisible(false);
             dispose();
+            frame.selectTrainer();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
             showWarning();
@@ -227,4 +245,19 @@ public class DatabaseConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JTextField usernameField;
     private javax.swing.JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
+
+    private static final class TextFieldApplyOnEnterActionListener implements ActionListener {
+
+        final DatabaseConnectionDialog dialog;
+
+        TextFieldApplyOnEnterActionListener(DatabaseConnectionDialog dialog) {
+            this.dialog = dialog;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            dialog.connectButton.doClick();
+        }
+
+    }
 }
