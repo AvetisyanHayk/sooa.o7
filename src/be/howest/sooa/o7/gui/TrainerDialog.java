@@ -1,6 +1,5 @@
 package be.howest.sooa.o7.gui;
 
-import be.howest.sooa.o7.domain.Trainer;
 import java.awt.event.ActionEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -11,7 +10,7 @@ import javax.swing.event.DocumentListener;
  */
 public class TrainerDialog extends javax.swing.JDialog {
 
-    private final transient SelectTrainerDialog dialog;
+    private final SelectTrainerDialog dialog;
     private String oldTrainerName;
 
     public TrainerDialog(SelectTrainerDialog dialog, String trainerName) {

@@ -1,7 +1,5 @@
 package be.howest.sooa.o7.domain;
 
-import be.howest.sooa.o7.gui.ImagePanel;
-import be.howest.sooa.o7.gui.ImageType;
 import java.util.Locale;
 import java.util.Objects;
 

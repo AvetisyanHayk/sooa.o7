@@ -11,20 +11,21 @@ import java.util.Objects;
  * @author Hayk
  */
 public class Trainer {
-    
+
     public static final int INITIAL_BALLS = 3;
 
     private final String name;
     private int pokeballs;
-    private final List<Pokemon> pokemons = new ArrayList<>();
+    private List<Pokemon> pokemons;
 
     public Trainer(String name) {
-        this.name = name;
+        this(name, 0);
     }
 
     public Trainer(String name, int pokeballs) {
         this.name = name;
         this.pokeballs = pokeballs;
+        pokemons = new ArrayList<>();
     }
 
     public String getName() {
@@ -43,16 +44,20 @@ public class Trainer {
         return Collections.unmodifiableList(pokemons);
     }
     
+    public void setPokemons(List<Pokemon> pokemons) {
+        this.pokemons = pokemons;
+    }
+
     public void earnBall() {
         pokeballs++;
     }
-    
+
     public void useBall() {
         if (pokeballs > 0) {
             pokeballs--;
         }
     }
-    
+
     public void addPokemon(Pokemon pokemon) {
         if (pokemon != null) {
             pokemons.add(pokemon);
@@ -80,7 +85,7 @@ public class Trainer {
         final Trainer other = (Trainer) obj;
         return name.equalsIgnoreCase(other.name);
     }
-    
+
     @Override
     public String toString() {
         return name;

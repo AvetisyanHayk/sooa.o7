@@ -51,11 +51,11 @@ public class MainFrame extends javax.swing.JFrame {
         addDialogKeyListener(encounterDialog);
         addListeners();
     }
-    
+
     public Trainer getTrainer() {
         return trainer;
     }
-    
+
     public void setTrainer(Trainer trainer) {
         this.trainer = trainer;
     }
@@ -78,7 +78,7 @@ public class MainFrame extends javax.swing.JFrame {
             close();
         });
     }
-    
+
     private void addTrainerButtonActionListener() {
         trainerButton.addActionListener((ActionEvent e) -> {
             JOptionPane.showMessageDialog(this, trainer.toString(), "Trainer",
@@ -273,6 +273,8 @@ public class MainFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Custom Listeners, Actions, Models">
     private static class DialogClosingOnEscapeAction extends AbstractAction {
 
+        private static final long serialVersionUID = 1L;
+
         final JDialog dialog;
 
         DialogClosingOnEscapeAction(JDialog dialog) {
@@ -286,16 +288,19 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }
 
-    private static class EncountersListModel extends AbstractListModel {
+    private static class EncountersListModel extends AbstractListModel<Encounter> {
 
-        final Set<Encounter> encounters = new TreeSet<>();
+        private static final long serialVersionUID = 1L;
+
+        final Set<Encounter> encounters;
 
         EncountersListModel() {
-            super();
+            this(new TreeSet<>());
         }
 
         EncountersListModel(Set<Encounter> encounters) {
             super();
+            this.encounters = new TreeSet<>();
             if (encounters != null) {
                 encounters.forEach((encounter) -> {
                     this.encounters.add(encounter);
@@ -305,6 +310,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         EncountersListModel(ListModel<Encounter> model) {
             super();
+            this.encounters = new TreeSet<>();
             if (model != null) {
                 for (int i = 0; i < model.getSize(); i++) {
                     encounters.add(model.getElementAt(i));

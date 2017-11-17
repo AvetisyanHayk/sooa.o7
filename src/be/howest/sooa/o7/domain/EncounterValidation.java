@@ -9,10 +9,11 @@ import java.util.List;
  */
 public class EncounterValidation {
 
-    private final List<String> messageList = new ArrayList<>();
+    private final List<String> messageList;
     private Encounter encounter;
 
     public EncounterValidation(Pokemon pokemon, String x, String y) {
+        messageList = new ArrayList<>();
         validatePokemon(pokemon);
         int intX = validateX(x);
         int intY = validateY(y);
