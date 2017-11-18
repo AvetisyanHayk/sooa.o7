@@ -86,25 +86,25 @@ public class TrainerRepositoryTest {
 
     @Test
     public void updating_existing_trainer_name_works_correctly() {
-        String name = "__JUnit__";
-        String updateName = name + "1";
-        Trainer trainer = new Trainer(name);
+        String oldName = "__JUnit__";
+        String newName = oldName + "1";
+        Trainer trainer = new Trainer(oldName);
         trainerRepo.remove(trainer);
         assertTrue(trainerRepo.save(trainer));
-        Trainer readTrainer = trainerRepo.findByName(name);
+        Trainer readTrainer = trainerRepo.findByName(oldName);
         assertNotNull(readTrainer);
-        assertEquals(name, readTrainer.getName());
-        trainerRepo.updateTrainerName(readTrainer, updateName);
-        Trainer updatedTrainer = trainerRepo.findByName(updateName);
+        assertEquals(oldName, readTrainer.getName());
+        readTrainer.setName(newName);
+        trainerRepo.updateTrainerName(readTrainer, oldName);
+        Trainer updatedTrainer = trainerRepo.findByName(newName);
         assertNotNull(updatedTrainer);
-        assertNotEquals(name, updatedTrainer.getName());
-        assertEquals(updateName, updatedTrainer.getName());
-        assertNotEquals(readTrainer, updatedTrainer);
+        assertNotEquals(oldName, updatedTrainer.getName());
+        assertEquals(newName, updatedTrainer.getName());
+        assertEquals(readTrainer, updatedTrainer);
         assertFalse(trainerRepo.remove(trainer));
-        assertFalse(trainerRepo.remove(readTrainer));
         assertTrue(trainerRepo.remove(updatedTrainer));
     }
-    
+
     @Test
     public void removing_trainer_works_correctly() {
         String name = "__JUnit__";

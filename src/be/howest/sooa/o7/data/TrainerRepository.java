@@ -43,7 +43,7 @@ public class TrainerRepository {
         return build(name);
     }
 
-    public List<Trainer> findAll() {
+    public List<Trainer> findAll() throws TrainerIOException {
         checkDirectory();
         File trainersDirectory = new File(TRAINERS_PATH);
         List<Trainer> trainers = new ArrayList<>();
@@ -69,6 +69,25 @@ public class TrainerRepository {
         return trainersDirectoryExists && trainerDirectoryExists;
     }
 
+    public boolean updateTrainerName(Trainer trainer, String oldTrainerName) throws TrainerIOException {
+        boolean trainersDirectoryExists = checkDirectory();
+        String newTrainerName = trainer.getName();
+        File newTrainerDirectory
+                = new File(String.format(FMT_TRAINER_PATH, newTrainerName));
+        if (newTrainerDirectory.exists()) {
+            throw new TrainerIOException("Trainer " + trainer.getName() + " already exists.");
+        } else {
+
+            File oldTrainerDirectory
+                    = new File(String.format(FMT_TRAINER_PATH, oldTrainerName));
+            if (!oldTrainerDirectory.exists()) {
+                return save(trainer);
+            }
+            return trainersDirectoryExists
+                    && oldTrainerDirectory.renameTo(newTrainerDirectory);
+        }
+    }
+
     public boolean remove(Trainer trainer) {
         File trainerDirectory
                 = new File(String.format(FMT_TRAINER_PATH, trainer.getName()));
@@ -88,27 +107,7 @@ public class TrainerRepository {
         return directory.delete();
     }
 
-    public boolean updateTrainerName(Trainer trainer, String newName) throws TrainerIOException {
-        boolean trainersDirectoryExists = checkDirectory();
-        File newTrainerDirectory
-                = new File(String.format(FMT_TRAINER_PATH, newName));
-        if (newTrainerDirectory.exists()) {
-            throw new TrainerIOException("Trainer " + newName + " already exists.");
-        } else {
-            File trainerDirectory
-                    = new File(String.format(FMT_TRAINER_PATH, trainer.getName()));
-            boolean trainerDirectoryExists = trainerDirectory.exists();
-            if (trainerDirectoryExists) {
-                trainerDirectoryExists
-                        = trainerDirectory.renameTo(newTrainerDirectory);
-                return trainersDirectoryExists && trainerDirectoryExists;
-            } else {
-                return trainersDirectoryExists && save(trainer);
-            }
-        }
-    }
-
-    private Trainer build(String name) {
+    private Trainer build(String name) throws TrainerIOException {
         if (name != null && !"".equals(name = name.trim())) {
             File trainerDirectory
                     = new File(String.format(FMT_TRAINER_PATH, name));
@@ -122,7 +121,7 @@ public class TrainerRepository {
         return null;
     }
 
-    private int getPokeballsFor(Trainer trainer) {
+    private int getPokeballsFor(Trainer trainer) throws TrainerIOException {
         File pokeballsFile = new File(String.format(FMT_POKEBALLS_PATH, trainer.getName()));
         try (BufferedReader bufferedReader
                 = Files.newBufferedReader(pokeballsFile.toPath(), StandardCharsets.UTF_8)) {
@@ -132,12 +131,11 @@ public class TrainerRepository {
             }
             return Integer.parseInt(sb.toString().trim());
         } catch (IOException | NumberFormatException ex) {
-            System.out.println(ex.getMessage());
+            throw new TrainerIOException(ex);
         }
-        return trainer.getPokeballs();
     }
 
-    private List<Pokemon> getPokemonsFor(Trainer trainer) {
+    private List<Pokemon> getPokemonsFor(Trainer trainer) throws TrainerIOException {
         File pokemonsFile = new File(String.format(FMT_POKEMONS_PATH, trainer.getName()));
         List<Pokemon> pokemons = new ArrayList<>();
         try (BufferedReader bufferedReader
@@ -147,35 +145,35 @@ public class TrainerRepository {
                 pokemons.add(readPokemon(line));
             });
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            throw new TrainerIOException(ex);
         }
         return pokemons;
     }
 
-    private Pokemon readPokemon(String pokemonId) {
+    private Pokemon readPokemon(String pokemonId) throws TrainerIOException {
         if (pokemonId != null && !"".equals(pokemonId)) {
             try {
                 long id = Long.parseLong(pokemonId);
                 return pokemonRepo.read(id);
             } catch (NumberFormatException ex) {
-                System.out.println(ex.getMessage());
+                throw new TrainerIOException("Pokemon-data corrupted.", ex);
             }
         }
         return null;
     }
 
-    private void savePokeballsFor(Trainer trainer) {
+    private void savePokeballsFor(Trainer trainer) throws TrainerIOException {
         File pokeballsFile = new File(String.format(FMT_POKEBALLS_PATH, trainer.getName()));
         try (BufferedWriter bufferedWriter
                 = Files.newBufferedWriter(pokeballsFile.toPath(), StandardCharsets.UTF_8)) {
             String pokeballs = String.valueOf(trainer.getPokeballs());
             bufferedWriter.write(pokeballs);
         } catch (IOException | NumberFormatException ex) {
-            System.out.println(ex.getMessage());
+            throw new TrainerIOException("Pokeball-data corrupted.", ex);
         }
     }
 
-    private void savePokemonsFor(Trainer trainer) {
+    private void savePokemonsFor(Trainer trainer) throws TrainerIOException {
         File pokemonsFile = new File(String.format(FMT_POKEMONS_PATH, trainer.getName()));
         try (BufferedWriter bufferedWriter
                 = Files.newBufferedWriter(pokemonsFile.toPath(), StandardCharsets.UTF_8)) {
@@ -185,11 +183,11 @@ public class TrainerRepository {
                     bufferedWriter.write(pokemonId);
                     bufferedWriter.newLine();
                 } catch (IOException ex) {
-                    System.out.println(ex.getMessage());
+                    throw new TrainerIOException("Pokemon-data corrupted.", ex);
                 }
             });
         } catch (IOException ex) {
-            System.out.println(ex.getMessage());
+            throw new TrainerIOException(ex);
         }
     }
 }

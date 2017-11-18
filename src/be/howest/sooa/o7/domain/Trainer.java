@@ -14,7 +14,7 @@ public class Trainer {
 
     public static final int INITIAL_BALLS = 3;
 
-    private final String name;
+    private String name;
     private int pokeballs;
     private List<Pokemon> pokemons;
 
@@ -30,6 +30,10 @@ public class Trainer {
 
     public String getName() {
         return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     public int getPokeballs() {

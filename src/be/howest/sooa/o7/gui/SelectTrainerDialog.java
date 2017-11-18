@@ -1,8 +1,10 @@
 package be.howest.sooa.o7.gui;
 
+import be.howest.sooa.o7.data.TrainerRepository;
 import be.howest.sooa.o7.domain.Trainer;
+import be.howest.sooa.o7.ex.TrainerIOException;
 import java.awt.event.ActionEvent;
-import java.io.File;
+import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
@@ -13,38 +15,39 @@ import javax.swing.JOptionPane;
  */
 public class SelectTrainerDialog extends javax.swing.JDialog {
 
-    private final MainFrame frame;
-    private final static String TRAINERS_PATH = "trainers";
-    private String selectedTrainer;
+    private final MainFrame parent;
+    private final transient TrainerRepository trainerRepo = new TrainerRepository();
 
-    public SelectTrainerDialog(MainFrame frame) {
-        super(frame, true);
-        this.frame = frame;
+    public SelectTrainerDialog(MainFrame parent) {
+        super(parent, true);
+        this.parent = parent;
         initComponents();
         fillTrainersList();
         addListeners();
     }
 
+    // <editor-fold defaultstate="collapsed" desc="Listeners">
     private void addListeners() {
         addExitButtonActionListener();
         addEditButtonActionListener();
         addAddButtonActionListener();
         addSelectButtonActionListener();
+        addDeleteButtonActionListener();
     }
 
     private void addExitButtonActionListener() {
         exitButton.addActionListener((ActionEvent e) -> {
-            frame.close();
+            parent.close();
         });
     }
 
     private void addEditButtonActionListener() {
         editButton.addActionListener((ActionEvent e) -> {
-            String trainerName = (String) trainersList.getSelectedItem();
-            JDialog dialog = new TrainerDialog(this, trainerName);
+            Trainer trainer = (Trainer) trainersList.getSelectedItem();
+            JDialog dialog = new TrainerDialog(this, trainer);
             dialog.setTitle("Edit Trainer");
-            frame.centerScreen(dialog);
-            frame.addDialogKeyListener(dialog);
+            parent.centerScreen(dialog);
+            parent.addDialogKeyListener(dialog);
             dialog.setVisible(true);
         });
     }
@@ -60,13 +63,31 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
             if (trainersList.getModel().getSize() == 0) {
                 showAddTrainerDialog();
             } else {
-                String name = (String) trainersList.getSelectedItem();
-                if (name == null) {
-                    showWarning("Select a trainer first, please!");
+                Trainer trainer = (Trainer) trainersList.getSelectedItem();
+                if (trainer == null) {
+                    showWarning("Select trainer, please!");
                 } else {
-                    Trainer trainer = new Trainer(name);
-                    frame.setTrainer(trainer);
+                    parent.setTrainer(trainer);
                     setVisible(false);
+                }
+            }
+        });
+    }
+
+    private void addDeleteButtonActionListener() {
+        deleteButton.addActionListener((ActionEvent e) -> {
+            Object[] options = {"Delete Trainer", "Do not delete"};
+            Trainer selected = (Trainer) trainersList.getSelectedItem();
+            String message = "Please, confirm you want to delete trainer "
+                    + selected.getName();
+            int result = JOptionPane.showOptionDialog(this, message,
+                    "Delete trainer", JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+            if (result == 0) {
+                trainerRepo.remove(selected);
+                fillTrainersList();
+                if (trainersList.getModel().getSize() == 0) {
+                    showAddTrainerDialog();
                 }
             }
         });
@@ -75,75 +96,72 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
     private void showAddTrainerDialog() {
         JDialog dialog = new TrainerDialog(this);
         dialog.setTitle("Add Trainer");
-        frame.centerScreen(dialog);
-        frame.addDialogKeyListener(dialog);
+        parent.centerScreen(dialog);
+        parent.addDialogKeyListener(dialog);
         dialog.setVisible(true);
     }
 
-    public boolean saveTrainer(String newTrainer) {
-        boolean success = false;
-        if (!"".equals(newTrainer)) {
-            File trainerDirectory = new File(TRAINERS_PATH + "/" + newTrainer);
-            selectedTrainer = newTrainer;
-            if (!trainerDirectory.exists()) {
-                success = trainerDirectory.mkdir();
-                fillTrainersList();
+    // </editor-fold>
+    //
+    // <editor-fold defaultstate="collapsed" desc="Data Manipulation">
+    public void saveTrainer(Trainer trainer) {
+        if (trainer != null) {
+            Trainer checkTrainer = trainerRepo.findByName(trainer.getName());
+            if (checkTrainer != null) {
+                showWarning("Trainer " + trainer.getName() + " already exists!");
             } else {
-                showWarning("Trainer " + newTrainer + " already exists");
-            }
-            trainersList.setSelectedItem(newTrainer);
-        }
-        return success;
-    }
-
-    public boolean saveTrainer(String oldTrainer, String newTrainer) {
-        boolean success = false;
-        if (!"".equals(newTrainer) && !"".equals(oldTrainer)) {
-            File trainerDirectory = new File(TRAINERS_PATH + "/" + oldTrainer);
-            File newTrainerDirectory = new File(TRAINERS_PATH + "/" + newTrainer);
-            selectedTrainer = newTrainer;
-            if (trainerDirectory.exists() && !newTrainerDirectory.exists()) {
-                success = trainerDirectory.renameTo(newTrainerDirectory);
-                fillTrainersList();
-            } else {
-                showWarning("Trainer " + newTrainer + " already exists");
-            }
-            trainersList.setSelectedItem(newTrainer);
-        }
-        return success;
-    }
-
-    private boolean fillTrainersList() {
-        boolean success = false;
-        String path = "trainers";
-        File trainersDirectory = new File(path);
-        if (trainersDirectory.exists()) {
-            String[] trainers = trainersDirectory
-                    .list((File current, String name1)
-                            -> new File(current, name1).isDirectory());
-            if (trainers.length != 0) {
-                showAddTrainerDialog();
-            } else {
-                DefaultComboBoxModel model = new DefaultComboBoxModel();
-                for (String trainer : trainers) {
-                    model.addElement(trainer);
+                try {
+                    trainerRepo.save(trainer);
+                } catch (TrainerIOException ex) {
+                    showWarning(ex.getMessage());
                 }
-                trainersList.setModel(model);
-                String selected = (String) trainersList.getSelectedItem();
-                editButton.setEnabled(selected != null && !"".equals(selected));
             }
-        } else {
-            success = trainersDirectory.mkdir();
-            showAddTrainerDialog();
+            fillTrainersList();
+            trainersList.setSelectedItem(trainer);
         }
-        return success;
     }
 
+    public void updateTrainerName(Trainer trainer, String oldTrainerName) throws TrainerIOException {
+        if (trainer != null && oldTrainerName != null && !"".equals(oldTrainerName)) {
+            try {
+                trainerRepo.updateTrainerName(trainer, oldTrainerName);
+            } catch (TrainerIOException ex) {
+                showWarning(ex.getMessage());
+            }
+            fillTrainersList();
+            trainersList.setSelectedItem(trainer);
+        }
+    }
+
+    // </editor-fold>
+    //
+    // <editor-fold defaultstate="collapsed" desc="Fill">
+    private void fillTrainersList() {
+        try {
+            List<Trainer> trainers = trainerRepo.findAll();
+            DefaultComboBoxModel model = new DefaultComboBoxModel();
+            trainers.forEach((trainer) -> {
+                model.addElement(trainer);
+            });
+            trainersList.setModel(model);
+            if (trainers.isEmpty()) {
+                showAddTrainerDialog();
+            }
+        } catch (TrainerIOException ex) {
+            showWarning(ex.getMessage());
+        }
+    }
+
+    // </editor-fold>
+    //
+    // <editor-fold defaultstate="collapsed" desc="Custom Functions">
     private void showWarning(String message) {
         JOptionPane.showMessageDialog(this, message, "Warning",
                 JOptionPane.WARNING_MESSAGE);
     }
 
+    // </editor-fold>
+    //
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -159,6 +177,7 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
         addButton = new javax.swing.JButton();
         exitButton = new javax.swing.JButton();
         selectButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Select Trainer");
@@ -172,6 +191,8 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
         exitButton.setText("Exit");
 
         selectButton.setText("Select Trainer");
+
+        deleteButton.setText("Delete Trainer");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -190,7 +211,8 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(addButton))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(deleteButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(selectButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(exitButton)))
@@ -209,7 +231,8 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(exitButton)
-                    .addComponent(selectButton))
+                    .addComponent(selectButton)
+                    .addComponent(deleteButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -218,10 +241,11 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
+    private javax.swing.JButton deleteButton;
     private javax.swing.JButton editButton;
     private javax.swing.JButton exitButton;
     private javax.swing.JButton selectButton;
     private javax.swing.JLabel trainersLabel;
-    private javax.swing.JComboBox<String> trainersList;
+    private javax.swing.JComboBox<Trainer> trainersList;
     // End of variables declaration//GEN-END:variables
 }

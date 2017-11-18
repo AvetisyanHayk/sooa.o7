@@ -14,12 +14,12 @@ import javax.swing.JOptionPane;
  */
 public class EncounterDialog extends javax.swing.JDialog {
 
-    private final MainFrame frame;
+    private final MainFrame parent;
     private ImagePanel imagePanel;
 
-    public EncounterDialog(MainFrame frame) {
-        super(frame, true);
-        this.frame = frame;
+    public EncounterDialog(MainFrame parent) {
+        super(parent, true);
+        this.parent = parent;
         initComponents();
         addListeners();
     }
@@ -36,7 +36,7 @@ public class EncounterDialog extends javax.swing.JDialog {
         addButton.addActionListener((ActionEvent e) -> {
             EncounterValidation validation = getEncounterValidation();
             if (validation.isValid()) {
-                frame.addEncounter(validation.getEncounter());
+                parent.addEncounter(validation.getEncounter());
             } else {
                 showWarning(validation.getMessage());
             }
@@ -83,7 +83,7 @@ public class EncounterDialog extends javax.swing.JDialog {
     }
     
     private void reloadPokemons() {
-        frame.loadPokemons();
+        parent.loadPokemons();
     }
 
     public void loadPokemons(List<Pokemon> pokemons) {

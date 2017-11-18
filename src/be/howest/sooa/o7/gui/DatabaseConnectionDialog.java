@@ -13,17 +13,17 @@ import javax.swing.JOptionPane;
  */
 public class DatabaseConnectionDialog extends javax.swing.JDialog {
 
-    private final MainFrame frame;
+    private final MainFrame parent;
 
-    public DatabaseConnectionDialog(MainFrame frame) {
-        super(frame, true);
+    public DatabaseConnectionDialog(MainFrame parent) {
+        super(parent, true);
         initComponents();
-        this.frame = frame;
+        this.parent = parent;
         addListeners();
     }
 
     private void addListeners() {
-        frame.addDialogKeyListener(this);
+        parent.addDialogKeyListener(this);
         addExitButtonActionListener();
         addConnectButtonActionListener();
         addTextFieldApplyOnEnterActionListener();
@@ -31,7 +31,7 @@ public class DatabaseConnectionDialog extends javax.swing.JDialog {
 
     private void addExitButtonActionListener() {
         exitButton.addActionListener((ActionEvent e) -> {
-            frame.close();
+            parent.close();
         });
     }
 
@@ -65,10 +65,10 @@ public class DatabaseConnectionDialog extends javax.swing.JDialog {
             String user = usernameField.getText();
             String password = String.valueOf(passwordField.getPassword()).trim();
             AbstractRepository.connect(driver, hostname, port, database, user, password, useSSL);
-            frame.confirmAuthentication();
+            parent.confirmAuthentication();
             setVisible(false);
             dispose();
-            frame.selectTrainer();
+            parent.selectTrainer();
         } catch (SQLException ex) {
             System.out.println(ex.getMessage());
             showWarning();
@@ -248,15 +248,15 @@ public class DatabaseConnectionDialog extends javax.swing.JDialog {
 
     private static final class TextFieldApplyOnEnterActionListener implements ActionListener {
 
-        final DatabaseConnectionDialog dialog;
+        final DatabaseConnectionDialog dbConnectionDialog;
 
-        TextFieldApplyOnEnterActionListener(DatabaseConnectionDialog dialog) {
-            this.dialog = dialog;
+        TextFieldApplyOnEnterActionListener(DatabaseConnectionDialog dbConnectionDialog) {
+            this.dbConnectionDialog = dbConnectionDialog;
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            dialog.connectButton.doClick();
+            dbConnectionDialog.connectButton.doClick();
         }
 
     }

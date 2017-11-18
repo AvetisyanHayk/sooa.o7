@@ -1,5 +1,6 @@
 package be.howest.sooa.o7.gui;
 
+import be.howest.sooa.o7.domain.Trainer;
 import java.awt.event.ActionEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -10,41 +11,60 @@ import javax.swing.event.DocumentListener;
  */
 public class TrainerDialog extends javax.swing.JDialog {
 
-    private final SelectTrainerDialog dialog;
+    private final SelectTrainerDialog parent;
+    private Trainer trainer;
     private String oldTrainerName;
 
-    public TrainerDialog(SelectTrainerDialog dialog, String trainerName) {
-        super(dialog, true);
-        this.dialog = dialog;
-        this.oldTrainerName = trainerName;
+    public TrainerDialog(SelectTrainerDialog parent) {
+        this(parent, null);
+    }
+
+    public TrainerDialog(SelectTrainerDialog parent, Trainer trainer) {
+        super(parent, true);
         initComponents();
-        if (trainerName != null) {
-            nameField.setText(trainerName);
+        this.parent = parent;
+        this.trainer = trainer;
+        if (trainer != null) {
+            this.oldTrainerName = trainer.getName();
+            nameField.setText(oldTrainerName);
         }
-        saveButton.setEnabled(!"".equals(nameField.getText().trim()));
         addListeners();
     }
 
-    public TrainerDialog(SelectTrainerDialog dialog) {
-        this(dialog, null);
+    private void addListeners() {
+        addNameFieldListeners();
+        addCloseButtonActionListener();
+        addSaveButtonActionListener();
     }
 
-    private void addListeners() {
-        nameField.getDocument().addDocumentListener(new NameChangedListener(this));
+    private void addNameFieldListeners() {
+        nameField.getDocument()
+                .addDocumentListener(new NameChangedListener(this));
+        nameField.addActionListener((ActionEvent e) -> {
+            saveButton.doClick();
+        });
+    }
+
+    private void addCloseButtonActionListener() {
         closeButton.addActionListener((ActionEvent e) -> {
             setVisible(false);
         });
+    }
+
+    private void addSaveButtonActionListener() {
         saveButton.addActionListener((ActionEvent e) -> {
-            if (oldTrainerName == null) {
-                dialog.saveTrainer(nameField.getText().trim());
+            String name = nameField.getText().trim();
+            if (trainer != null) {
+                trainer.setName(name);
             } else {
-                dialog.saveTrainer(oldTrainerName, nameField.getText().trim());
+                trainer = new Trainer(name);
             }
-            setVisible(false);
-            dispose();
-        });
-        nameField.addActionListener((ActionEvent e) -> {
-            saveButton.doClick();
+            if (oldTrainerName == null) {
+                parent.saveTrainer(trainer);
+            } else {
+                parent.updateTrainerName(trainer, oldTrainerName);
+            }
+            close();
         });
     }
 
@@ -53,6 +73,13 @@ public class TrainerDialog extends javax.swing.JDialog {
         errorLabel.setText("");
         messageLabel.setText("");
         super.setVisible(visible);
+    }
+
+    private void close() {
+        trainer = null;
+        oldTrainerName = null;
+        setVisible(false);
+        dispose();
     }
 
     /**
@@ -81,6 +108,7 @@ public class TrainerDialog extends javax.swing.JDialog {
         closeButton.setText("Do not save");
 
         saveButton.setText("Save Trainer");
+        saveButton.setEnabled(false);
 
         messageLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
 
@@ -139,10 +167,10 @@ public class TrainerDialog extends javax.swing.JDialog {
     private static class NameChangedListener implements DocumentListener {
 
         static final String PATTERN = "^_?([A-Z]|[a-z])+((_|\\s)?([A-Z]|[a-z]|[1-9])+)+_?$";
-        final TrainerDialog dialog;
+        final TrainerDialog trainerDialog;
 
-        NameChangedListener(TrainerDialog dialog) {
-            this.dialog = dialog;
+        NameChangedListener(TrainerDialog trainerDialog) {
+            this.trainerDialog = trainerDialog;
         }
 
         @Override
@@ -161,15 +189,17 @@ public class TrainerDialog extends javax.swing.JDialog {
         }
 
         void validateInput() {
-            String value = dialog.nameField.getText().trim();
-            boolean valueMatchesPattern = value.matches(PATTERN);
-            dialog.saveButton.setEnabled(valueMatchesPattern);
-            if (valueMatchesPattern || "".equals(value)) {
-                dialog.errorLabel.setText("");
-                dialog.messageLabel.setText("");
+            String value = trainerDialog.nameField.getText().trim();
+            boolean validName = value.matches(PATTERN) && !"".equals(value);
+            boolean sameName = trainerDialog.oldTrainerName != null
+                    && value.equals(trainerDialog.oldTrainerName);
+            trainerDialog.saveButton.setEnabled(validName && !sameName);
+            if (validName || sameName) {
+                trainerDialog.errorLabel.setText("");
+                trainerDialog.messageLabel.setText("");
             } else {
-                dialog.errorLabel.setText("Wrong trainer name!");
-                dialog.messageLabel
+                trainerDialog.errorLabel.setText("Wrong trainer name!");
+                trainerDialog.messageLabel
                         .setText("<html>The name length must be at least 2 characters long<br>"
                                 + "and begin with a letter or underscore then a letter,<br>"
                                 + "then alphanumeric characters splitted by a space or an underscore.</html>");

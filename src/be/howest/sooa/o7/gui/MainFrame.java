@@ -60,6 +60,10 @@ public class MainFrame extends javax.swing.JFrame {
         this.trainer = trainer;
     }
 
+    public boolean hasTrainer() {
+        return trainer != null;
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Listeners">
     private void addListeners() {
         addAddEncountersButtonActionListener();
@@ -148,6 +152,14 @@ public class MainFrame extends javax.swing.JFrame {
         SelectTrainerDialog dialog = new SelectTrainerDialog(this);
         centerScreen(dialog);
         addDialogKeyListener(dialog);
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent evt) {
+                if (!hasTrainer()) {
+                    close();
+                }
+            }
+        });
         dialog.setVisible(true);
     }
 
