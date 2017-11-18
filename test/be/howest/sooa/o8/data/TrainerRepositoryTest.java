@@ -27,7 +27,7 @@ public class TrainerRepositoryTest {
     public TrainerRepositoryTest() {
         try {
             AbstractRepository.connect("mysql", "localhost", "3306",
-                    "sooa_o7", "student", "student", "false");
+                    "sooa_o8", "student", "student", "false");
             pokemonRepo = new PokemonRepository();
             trainerRepo = new TrainerRepository();
             pokemon1 = pokemonRepo.read(1L);
