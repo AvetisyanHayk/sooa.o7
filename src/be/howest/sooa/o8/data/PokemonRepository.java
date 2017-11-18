@@ -2,7 +2,7 @@ package be.howest.sooa.o8.data;
 
 import be.howest.sooa.o8.domain.Pokemon;
 import be.howest.sooa.o8.ex.DBException;
-import be.howest.sooa.o8.gui.ImagePanel;
+import be.howest.sooa.o8.gui.PokemonImagePanel;
 import be.howest.sooa.o8.gui.ImageType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -99,7 +99,7 @@ public class PokemonRepository extends AbstractRepository {
     }
     
     private static String getImagePathFor(Pokemon pokemon, ImageType imageType) {
-        return ImagePanel.getImagePathFor(pokemon, imageType);
+        return PokemonImagePanel.getImagePathFor(pokemon, imageType);
     }
     
     public static List<Pokemon> fillPokemonsWithImagePath(List<Pokemon> pokemons, ImageType imageType) {

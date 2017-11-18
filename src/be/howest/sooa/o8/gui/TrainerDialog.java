@@ -13,7 +13,7 @@ import javax.swing.DefaultComboBoxModel;
 public class TrainerDialog extends javax.swing.JDialog {
 
     private final MainFrame parent;
-    private ImagePanel imagePanel;
+    private PokemonImagePanel imagePanel;
 
     public TrainerDialog(MainFrame parent) {
         super(parent, true);
@@ -83,7 +83,7 @@ public class TrainerDialog extends javax.swing.JDialog {
 
     private void drawImage(Pokemon pokemon) {
         if (pokemon.getImagePath() != null) {
-            imagePanel = new ImagePanel(pokemon.getImagePath(), imageContainer);
+            imagePanel = new PokemonImagePanel(pokemon.getImagePath(), imageContainer);
             imagePanel.setSize(imageContainer.getWidth(), imageContainer.getHeight());
             imageContainer.add(imagePanel);
             imagePanel.repaint();

@@ -11,14 +11,14 @@ import javax.swing.JPanel;
  *
  * @author Hayk
  */
-public class ImagePanel extends JPanel {
+public class PokemonImagePanel extends JPanel {
 
     private static final String IMAGE_PATH = "images/%s/%03d.%s";
 
     private ImageIcon image;
     private final JPanel imageContainer;
 
-    public ImagePanel(String imagePath, JPanel imageContainer) {
+    public PokemonImagePanel(String imagePath, JPanel imageContainer) {
         super();
         this.imageContainer = imageContainer;
         if (new File(imagePath).exists()) {
