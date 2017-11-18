@@ -1,5 +1,6 @@
 package be.howest.sooa.o7.gui;
 
+import be.howest.sooa.o7.data.EncounterRepository;
 import be.howest.sooa.o7.data.PokemonRepository;
 import be.howest.sooa.o7.domain.Encounter;
 import be.howest.sooa.o7.domain.Trainer;
@@ -21,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JRootPane;
 import javax.swing.KeyStroke;
 import javax.swing.ListModel;
+import javax.swing.event.ListSelectionEvent;
 
 /**
  *
@@ -29,6 +31,7 @@ import javax.swing.ListModel;
 public class MainFrame extends javax.swing.JFrame {
 
     private transient PokemonRepository pokemonRepo;
+    private transient EncounterRepository encounterRepo;
     private EncounterDialog encounterDialog;
     private transient Trainer trainer;
 
@@ -46,7 +49,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     public void init() {
         encounterDialog = new EncounterDialog(this);
-        encounterDialog.loadPokemons(pokemonRepo.findAll());
+        encounterDialog.loadPokemons(pokemonRepo.findAllWithImagePath(ImageType.GIF));
         centerScreen(encounterDialog);
         addDialogKeyListener(encounterDialog);
         addListeners();
@@ -64,11 +67,29 @@ public class MainFrame extends javax.swing.JFrame {
         return trainer != null;
     }
 
+    public void load() {
+        if (encounterRepo == null) {
+            encounterRepo = new EncounterRepository();
+        }
+        fillEncounters();
+        setTrainerPokemonsImagePath();
+    }
+
+    public void fillEncounters() {
+        EncountersListModel model = new EncountersListModel();
+        encounterRepo.findAll().forEach((encounter) -> {
+            model.addEncounter(encounter);
+        });
+        encountersList.setModel(model);
+    }
+
     // <editor-fold defaultstate="collapsed" desc="Listeners">
     private void addListeners() {
         addAddEncountersButtonActionListener();
         addExitButtonActionListener();
         addTrainerButtonActionListener();
+        addEncountersListItemSelectionListener();
+        addCatchButtonActionListener();
     }
 
     private void addAddEncountersButtonActionListener() {
@@ -85,8 +106,23 @@ public class MainFrame extends javax.swing.JFrame {
 
     private void addTrainerButtonActionListener() {
         trainerButton.addActionListener((ActionEvent e) -> {
-            JOptionPane.showMessageDialog(this, trainer.toString(), "Trainer",
-                    JOptionPane.PLAIN_MESSAGE);
+            TrainerDialog dialog = new TrainerDialog(this);
+            centerScreen(dialog);
+            addDialogKeyListener(dialog);
+            dialog.setVisible(true);
+        });
+    }
+
+    private void addEncountersListItemSelectionListener() {
+        encountersList.addListSelectionListener((ListSelectionEvent e) -> {
+            catchButton.setEnabled(!e.getValueIsAdjusting()
+                    && encountersList.getSelectedValue() != null);
+        });
+    }
+    
+    private void addCatchButtonActionListener() {
+        catchButton.addActionListener((ActionEvent e) -> {
+            JOptionPane.showMessageDialog(this, "Catch it! (not working yet)");
         });
     }
 
@@ -109,14 +145,13 @@ public class MainFrame extends javax.swing.JFrame {
     //
     // <editor-fold defaultstate="collapsed" desc="Fill, Clear, Reset, etc.">
     public void addEncounter(Encounter encounter) {
-        EncountersListModel model = new EncountersListModel(encountersList.getModel());
-        model.addEncounter(encounter);
-        encountersList.setModel(model);
+        encounterRepo.save(encounter);
+        fillEncounters();
         encounterDialog.setVisible(false);
     }
 
     public void loadPokemons() {
-        encounterDialog.loadPokemons(pokemonRepo.findAll());
+        encounterDialog.loadPokemons(pokemonRepo.findAllWithImagePath(ImageType.GIF));
     }
 
     // </editor-fold>
@@ -177,6 +212,14 @@ public class MainFrame extends javax.swing.JFrame {
         return pokemonRepo != null;
     }
 
+    public void setTrainerPokemonsImagePath() {
+        if (trainer != null) {
+            trainer.setPokemons(PokemonRepository
+                    .fillPokemonsWithImagePath(trainer.getPokemons(),
+                            ImageType.GIF));
+        }
+    }
+
     // </editor-fold>
     //
     /**
@@ -193,6 +236,7 @@ public class MainFrame extends javax.swing.JFrame {
         encountersList = new javax.swing.JList<>();
         exitButton = new javax.swing.JButton();
         trainerButton = new javax.swing.JButton();
+        catchButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Pokedex");
@@ -200,11 +244,15 @@ public class MainFrame extends javax.swing.JFrame {
 
         addEncounterButton.setText("Add Encounter...");
 
+        encountersList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(encountersList);
 
         exitButton.setText("Exit");
 
         trainerButton.setText("Trainer...");
+
+        catchButton.setText("Catch");
+        catchButton.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -218,6 +266,8 @@ public class MainFrame extends javax.swing.JFrame {
                         .addComponent(addEncounterButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(trainerButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(catchButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(exitButton)))
                 .addContainerGap())
@@ -231,7 +281,8 @@ public class MainFrame extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(addEncounterButton)
                     .addComponent(exitButton)
-                    .addComponent(trainerButton))
+                    .addComponent(trainerButton)
+                    .addComponent(catchButton))
                 .addContainerGap())
         );
 
@@ -276,6 +327,7 @@ public class MainFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addEncounterButton;
+    private javax.swing.JButton catchButton;
     private javax.swing.JList<Encounter> encountersList;
     private javax.swing.JButton exitButton;
     private javax.swing.JScrollPane jScrollPane1;

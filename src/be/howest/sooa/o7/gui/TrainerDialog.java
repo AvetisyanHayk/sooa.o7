@@ -1,9 +1,10 @@
 package be.howest.sooa.o7.gui;
 
+import be.howest.sooa.o7.domain.Pokemon;
 import be.howest.sooa.o7.domain.Trainer;
 import java.awt.event.ActionEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import java.awt.event.ItemEvent;
+import javax.swing.DefaultComboBoxModel;
 
 /**
  *
@@ -11,75 +12,90 @@ import javax.swing.event.DocumentListener;
  */
 public class TrainerDialog extends javax.swing.JDialog {
 
-    private final SelectTrainerDialog parent;
-    private Trainer trainer;
-    private String oldTrainerName;
+    private final MainFrame parent;
+    private ImagePanel imagePanel;
 
-    public TrainerDialog(SelectTrainerDialog parent) {
-        this(parent, null);
-    }
-
-    public TrainerDialog(SelectTrainerDialog parent, Trainer trainer) {
+    public TrainerDialog(MainFrame parent) {
         super(parent, true);
-        initComponents();
         this.parent = parent;
-        this.trainer = trainer;
-        if (trainer != null) {
-            this.oldTrainerName = trainer.getName();
-            nameField.setText(oldTrainerName);
-        }
+        initComponents();
+        fillTrainerInfo();
         addListeners();
     }
 
     private void addListeners() {
-        addNameFieldListeners();
-        addCloseButtonActionListener();
-        addSaveButtonActionListener();
-    }
-
-    private void addNameFieldListeners() {
-        nameField.getDocument()
-                .addDocumentListener(new NameChangedListener(this));
-        nameField.addActionListener((ActionEvent e) -> {
-            saveButton.doClick();
-        });
-    }
-
-    private void addCloseButtonActionListener() {
         closeButton.addActionListener((ActionEvent e) -> {
             setVisible(false);
         });
+        pokemonsList.addItemListener((ItemEvent e) -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                fillDetails();
+            }
+        });
     }
 
-    private void addSaveButtonActionListener() {
-        saveButton.addActionListener((ActionEvent e) -> {
-            String name = nameField.getText().trim();
-            if (trainer != null) {
-                trainer.setName(name);
-            } else {
-                trainer = new Trainer(name);
-            }
-            if (oldTrainerName == null) {
-                parent.saveTrainer(trainer);
-            } else {
-                parent.updateTrainerName(trainer, oldTrainerName);
-            }
-            close();
+    private void fillTrainerInfo() {
+        Trainer trainer = parent.getTrainer();
+        trainerName.setText(trainer.getName());
+        pokeballCount.setText(String.valueOf(trainer.getPokeballs()));
+        pokemonCount.setText(String.valueOf(trainer.getPokemonCount()));
+        DefaultComboBoxModel<Pokemon> model = new DefaultComboBoxModel<>();
+        trainer.getPokemons().forEach((pokemon) -> {
+            model.addElement(pokemon);
         });
+        pokemonsList.setModel(model);
     }
 
     @Override
     public void setVisible(boolean visible) {
-        errorLabel.setText("");
-        messageLabel.setText("");
+        reset();
         super.setVisible(visible);
     }
 
-    private void close() {
-        trainer = null;
-        oldTrainerName = null;
-        setVisible(false);
-        dispose();
+    private void reset() {
+        if (pokemonsList.getModel().getSize() > 0) {
+            pokemonsList.setSelectedIndex(0);
+        }
+        fillDetails();
+    }
+
+    private void fillDetails() {
+        Pokemon pokemon = (Pokemon) pokemonsList.getSelectedItem();
+        removeImage();
+        if (pokemon == null) {
+            fillDetails("", "", "", "");
+        } else {
+            fillDetails(String.valueOf(pokemon.getSpeciesId()),
+                    String.valueOf(pokemon.getBaseExperience()),
+                    String.valueOf(pokemon.getHeight()),
+                    String.valueOf(pokemon.getWeight()));
+            drawImage(pokemon);
+        }
+    }
+
+    private void removeImage() {
+        if (imagePanel != null) {
+            imageContainer.remove(imagePanel);
+        }
+        imageContainer.repaint();
+        imagePanel = null;
+    }
+
+    private void drawImage(Pokemon pokemon) {
+        if (pokemon.getImagePath() != null) {
+            imagePanel = new ImagePanel(pokemon.getImagePath(), imageContainer);
+            imagePanel.setSize(imageContainer.getWidth(), imageContainer.getHeight());
+            imageContainer.add(imagePanel);
+            imagePanel.repaint();
+        }
+    }
+
+    private void fillDetails(String speciesId, String baseExperience,
+            String height, String weight) {
+        pokemonSpeciesId.setText(speciesId);
+        pokemonBaseExperience.setText(baseExperience);
+        pokemonHeight.setText(height);
+        pokemonWeight.setText(weight);
     }
 
     /**
@@ -91,26 +107,194 @@ public class TrainerDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        nameLabel = new javax.swing.JLabel();
-        nameField = new javax.swing.JTextField();
-        errorLabel = new javax.swing.JLabel();
+        trainerTabPane = new javax.swing.JTabbedPane();
+        trainerInfoTab = new javax.swing.JPanel();
+        trainerNameLabel = new javax.swing.JLabel();
+        trainerName = new javax.swing.JLabel();
+        pokeballsLabel = new javax.swing.JLabel();
+        pokeballCount = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        pokemonCount = new javax.swing.JLabel();
+        trainerPokemonsTab = new javax.swing.JPanel();
+        pokemonsList = new javax.swing.JComboBox<>();
+        pokemonLabel = new javax.swing.JLabel();
+        imageContainer = new javax.swing.JPanel();
+        speciesIdLabel = new javax.swing.JLabel();
+        pokemonSpeciesId = new javax.swing.JLabel();
+        baseExperienceLabel = new javax.swing.JLabel();
+        pokemonBaseExperience = new javax.swing.JLabel();
+        heightLabel = new javax.swing.JLabel();
+        pokemonHeight = new javax.swing.JLabel();
+        weightLabel = new javax.swing.JLabel();
+        pokemonWeight = new javax.swing.JLabel();
         closeButton = new javax.swing.JButton();
-        saveButton = new javax.swing.JButton();
-        messageLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Trainer Info...");
 
-        nameLabel.setText("Trainer Name");
+        trainerNameLabel.setText("Name:");
 
-        errorLabel.setForeground(new java.awt.Color(255, 0, 0));
-        errorLabel.setText("E");
+        trainerName.setText("X");
 
-        closeButton.setText("Do not save");
+        pokeballsLabel.setText("Pokeballs:");
 
-        saveButton.setText("Save Trainer");
-        saveButton.setEnabled(false);
+        pokeballCount.setText("0");
 
-        messageLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jLabel1.setText("Pokémons:");
+
+        pokemonCount.setText("0");
+
+        javax.swing.GroupLayout trainerInfoTabLayout = new javax.swing.GroupLayout(trainerInfoTab);
+        trainerInfoTab.setLayout(trainerInfoTabLayout);
+        trainerInfoTabLayout.setHorizontalGroup(
+            trainerInfoTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(trainerInfoTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(trainerInfoTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(trainerInfoTabLayout.createSequentialGroup()
+                        .addComponent(trainerNameLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(trainerName))
+                    .addGroup(trainerInfoTabLayout.createSequentialGroup()
+                        .addComponent(pokeballsLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pokeballCount))
+                    .addGroup(trainerInfoTabLayout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(pokemonCount)))
+                .addContainerGap(301, Short.MAX_VALUE))
+        );
+        trainerInfoTabLayout.setVerticalGroup(
+            trainerInfoTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(trainerInfoTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(trainerInfoTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(trainerNameLabel)
+                    .addComponent(trainerName))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(trainerInfoTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(pokeballsLabel)
+                    .addComponent(pokeballCount))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(trainerInfoTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(pokemonCount))
+                .addContainerGap(134, Short.MAX_VALUE))
+        );
+
+        trainerTabPane.addTab("Trainer", trainerInfoTab);
+
+        pokemonLabel.setText("Pokémon");
+
+        imageContainer.setPreferredSize(new java.awt.Dimension(134, 134));
+
+        javax.swing.GroupLayout imageContainerLayout = new javax.swing.GroupLayout(imageContainer);
+        imageContainer.setLayout(imageContainerLayout);
+        imageContainerLayout.setHorizontalGroup(
+            imageContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 148, Short.MAX_VALUE)
+        );
+        imageContainerLayout.setVerticalGroup(
+            imageContainerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+
+        speciesIdLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        speciesIdLabel.setText("Species Id:");
+
+        pokemonSpeciesId.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        pokemonSpeciesId.setText("0");
+        pokemonSpeciesId.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+
+        baseExperienceLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        baseExperienceLabel.setText("Base Experience:");
+
+        pokemonBaseExperience.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        pokemonBaseExperience.setText("0");
+        pokemonBaseExperience.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+
+        heightLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        heightLabel.setText("Height:");
+
+        pokemonHeight.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        pokemonHeight.setText("0");
+        pokemonHeight.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+
+        weightLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        weightLabel.setText("Weight:");
+
+        pokemonWeight.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        pokemonWeight.setText("0");
+        pokemonWeight.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
+
+        javax.swing.GroupLayout trainerPokemonsTabLayout = new javax.swing.GroupLayout(trainerPokemonsTab);
+        trainerPokemonsTab.setLayout(trainerPokemonsTabLayout);
+        trainerPokemonsTabLayout.setHorizontalGroup(
+            trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(pokemonsList, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                        .addGroup(trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(pokemonLabel)
+                            .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                                .addComponent(imageContainer, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addGroup(trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                                        .addComponent(speciesIdLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(pokemonSpeciesId))
+                                    .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                                        .addComponent(heightLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(pokemonHeight))
+                                    .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                                        .addComponent(weightLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(pokemonWeight))
+                                    .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                                        .addComponent(baseExperienceLabel)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(pokemonBaseExperience)))))
+                        .addGap(0, 102, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        trainerPokemonsTabLayout.setVerticalGroup(
+            trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pokemonLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pokemonsList, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(trainerPokemonsTabLayout.createSequentialGroup()
+                        .addGroup(trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(speciesIdLabel)
+                            .addComponent(pokemonSpeciesId))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(baseExperienceLabel)
+                            .addComponent(pokemonBaseExperience))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(heightLabel)
+                            .addComponent(pokemonHeight))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(trainerPokemonsTabLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(weightLabel)
+                            .addComponent(pokemonWeight))
+                        .addGap(0, 57, Short.MAX_VALUE))
+                    .addComponent(imageContainer, javax.swing.GroupLayout.DEFAULT_SIZE, 131, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+
+        trainerTabPane.addTab("Pokémons", trainerPokemonsTab);
+
+        closeButton.setText("Close");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -119,91 +303,46 @@ public class TrainerDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(nameField)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(nameLabel)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 190, Short.MAX_VALUE)
-                        .addComponent(saveButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(closeButton))
-                    .addComponent(messageLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(trainerTabPane)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(closeButton)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(nameLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(nameField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(errorLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(messageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(49, Short.MAX_VALUE))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(saveButton)
-                    .addComponent(closeButton))
-                .addContainerGap())
+                .addComponent(trainerTabPane, javax.swing.GroupLayout.PREFERRED_SIZE, 227, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(closeButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel baseExperienceLabel;
     private javax.swing.JButton closeButton;
-    private javax.swing.JLabel errorLabel;
-    private javax.swing.JLabel messageLabel;
-    private javax.swing.JTextField nameField;
-    private javax.swing.JLabel nameLabel;
-    private javax.swing.JButton saveButton;
+    private javax.swing.JLabel heightLabel;
+    private javax.swing.JPanel imageContainer;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel pokeballCount;
+    private javax.swing.JLabel pokeballsLabel;
+    private javax.swing.JLabel pokemonBaseExperience;
+    private javax.swing.JLabel pokemonCount;
+    private javax.swing.JLabel pokemonHeight;
+    private javax.swing.JLabel pokemonLabel;
+    private javax.swing.JLabel pokemonSpeciesId;
+    private javax.swing.JLabel pokemonWeight;
+    private javax.swing.JComboBox<Pokemon> pokemonsList;
+    private javax.swing.JLabel speciesIdLabel;
+    private javax.swing.JPanel trainerInfoTab;
+    private javax.swing.JLabel trainerName;
+    private javax.swing.JLabel trainerNameLabel;
+    private javax.swing.JPanel trainerPokemonsTab;
+    private javax.swing.JTabbedPane trainerTabPane;
+    private javax.swing.JLabel weightLabel;
     // End of variables declaration//GEN-END:variables
-
-    private static class NameChangedListener implements DocumentListener {
-
-        static final String PATTERN = "^_?([A-Z]|[a-z])+((_|\\s)?([A-Z]|[a-z]|[1-9])+)+_?$";
-        final TrainerDialog trainerDialog;
-
-        NameChangedListener(TrainerDialog trainerDialog) {
-            this.trainerDialog = trainerDialog;
-        }
-
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            validateInput();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            validateInput();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            validateInput();
-        }
-
-        void validateInput() {
-            String value = trainerDialog.nameField.getText().trim();
-            boolean validName = value.matches(PATTERN) && !"".equals(value);
-            boolean sameName = trainerDialog.oldTrainerName != null
-                    && value.equals(trainerDialog.oldTrainerName);
-            trainerDialog.saveButton.setEnabled(validName && !sameName);
-            if (validName || sameName) {
-                trainerDialog.errorLabel.setText("");
-                trainerDialog.messageLabel.setText("");
-            } else {
-                trainerDialog.errorLabel.setText("Wrong trainer name!");
-                trainerDialog.messageLabel
-                        .setText("<html>The name length must be at least 2 characters long<br>"
-                                + "and begin with a letter or underscore then a letter,<br>"
-                                + "then alphanumeric characters splitted by a space or an underscore.</html>");
-            }
-        }
-    }
 }

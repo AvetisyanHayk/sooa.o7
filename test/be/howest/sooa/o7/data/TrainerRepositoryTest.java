@@ -18,8 +18,8 @@ public class TrainerRepositoryTest {
 
     private TrainerRepository trainerRepo;
     private PokemonRepository pokemonRepo;
-    private static Pokemon pokemon1;
-    private static Pokemon pokemon2;
+    private Pokemon pokemon1;
+    private Pokemon pokemon2;
 
     public TrainerRepositoryTest() {
         try {

@@ -5,6 +5,7 @@ import be.howest.sooa.o7.domain.Encounter;
 import be.howest.sooa.o7.domain.Pokemon;
 import be.howest.sooa.o7.ex.DBException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -26,6 +27,9 @@ public class EncounterRepository extends AbstractRepository {
             + " JOIN pokemon ON encounter.pokemon_id = pokemon.id";
     private static final String SQL_FIND_ALL = SQL
             + " ORDER BY x, y";
+    private static final String SQL_INSERT
+            = "INSERT INTO encounter(pokemon_id, x, y)"
+            + " VALUES(?, ?, ?)";
 
     public List<Encounter> findAll() {
         List<Encounter> entities = new ArrayList<>();
@@ -37,7 +41,18 @@ public class EncounterRepository extends AbstractRepository {
             }
             return entities;
         } catch (SQLException ex) {
-            System.out.println(ex.getMessage());
+            throw new DBException(ex);
+        }
+    }
+
+    public void save(Encounter encounter) {
+        try (Connection connection = getConnection();
+                PreparedStatement statement = connection.prepareStatement(SQL_INSERT)) {
+            statement.setLong(1, encounter.getPokemon().getId());
+            statement.setInt(2, encounter.getX());
+            statement.setInt(3, encounter.getY());
+            statement.executeUpdate();
+        } catch (SQLException ex) {
             throw new DBException(ex);
         }
     }

@@ -89,10 +89,8 @@ public class EncounterDialog extends javax.swing.JDialog {
     public void loadPokemons(List<Pokemon> pokemons) {
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         pokemons.forEach((pokemon) -> {
-            String imagePath = ImagePanel.getImagePathFor(pokemon, ImageType.GIF);
             boolean withImage = withImageCheckBox.isSelected();
-            if (!withImage || imagePath != null) {
-                pokemon.setImagePath(ImagePanel.getImagePathFor(pokemon, ImageType.GIF));
+            if (!withImage || pokemon.getImagePath() != null) {
                 model.addElement(pokemon);
             }
         });
@@ -186,7 +184,7 @@ public class EncounterDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Add Encounter");
 
-        pokemonsListLabel.setText("Pokemons");
+        pokemonsListLabel.setText("Pokémons");
 
         speciesIdLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         speciesIdLabel.setText("Species Id:");

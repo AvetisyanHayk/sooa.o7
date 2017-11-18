@@ -35,6 +35,8 @@
                       <Component id="addEncounterButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="trainerButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="catchButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="exitButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -53,6 +55,7 @@
                   <Component id="addEncounterButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="exitButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="trainerButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="catchButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -77,6 +80,7 @@
             <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
               <StringArray count="0"/>
             </Property>
+            <Property name="selectionMode" type="int" value="0"/>
           </Properties>
           <AuxValues>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;Encounter&gt;"/>
@@ -92,6 +96,12 @@
     <Component class="javax.swing.JButton" name="trainerButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Trainer..."/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="catchButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Catch"/>
+        <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
   </SubComponents>

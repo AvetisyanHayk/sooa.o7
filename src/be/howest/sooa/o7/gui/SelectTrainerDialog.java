@@ -16,7 +16,7 @@ import javax.swing.JOptionPane;
 public class SelectTrainerDialog extends javax.swing.JDialog {
 
     private final MainFrame parent;
-    private final transient TrainerRepository trainerRepo = new TrainerRepository();
+    private final transient TrainerRepository trainerRepo= new TrainerRepository();
 
     public SelectTrainerDialog(MainFrame parent) {
         super(parent, true);
@@ -44,7 +44,7 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
     private void addEditButtonActionListener() {
         editButton.addActionListener((ActionEvent e) -> {
             Trainer trainer = (Trainer) trainersList.getSelectedItem();
-            JDialog dialog = new TrainerDialog(this, trainer);
+            JDialog dialog = new TrainerFormDialog(this, trainer);
             dialog.setTitle("Edit Trainer");
             parent.centerScreen(dialog);
             parent.addDialogKeyListener(dialog);
@@ -68,7 +68,9 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
                     showWarning("Select trainer, please!");
                 } else {
                     parent.setTrainer(trainer);
+                    parent.load();
                     setVisible(false);
+                    dispose();
                 }
             }
         });
@@ -94,7 +96,7 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
     }
 
     private void showAddTrainerDialog() {
-        JDialog dialog = new TrainerDialog(this);
+        JDialog dialog = new TrainerFormDialog(this);
         dialog.setTitle("Add Trainer");
         parent.centerScreen(dialog);
         parent.addDialogKeyListener(dialog);

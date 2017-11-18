@@ -2,6 +2,8 @@ package be.howest.sooa.o7.data;
 
 import be.howest.sooa.o7.domain.Pokemon;
 import be.howest.sooa.o7.ex.DBException;
+import be.howest.sooa.o7.gui.ImagePanel;
+import be.howest.sooa.o7.gui.ImageType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -39,6 +41,15 @@ public class PokemonRepository extends AbstractRepository {
         }
     }
 
+    public Pokemon readWithImagePath(long id, ImageType imageType)
+            throws DBException {
+        Pokemon pokemon = read(id);
+        if (pokemon != null) {
+            pokemon.setImagePath(getImagePathFor(pokemon, imageType));
+        }
+        return pokemon;
+    }
+
     public List<Pokemon> findAll() {
         List<Pokemon> entities = new ArrayList<>();
         try (Connection connection = getConnection();
@@ -52,6 +63,10 @@ public class PokemonRepository extends AbstractRepository {
             System.out.println(ex.getMessage());
             throw new DBException(ex);
         }
+    }
+    
+    public List<Pokemon> findAllWithImagePath(ImageType imageType) throws DBException {
+        return fillPokemonsWithImagePath(findAll(), imageType);
     }
 
     public List<Pokemon> findAllByDefault(boolean _default) {
@@ -81,5 +96,20 @@ public class PokemonRepository extends AbstractRepository {
                 resultSet.getInt("order"),
                 resultSet.getBoolean("is_default")
         );
+    }
+    
+    private static String getImagePathFor(Pokemon pokemon, ImageType imageType) {
+        return ImagePanel.getImagePathFor(pokemon, imageType);
+    }
+    
+    public static List<Pokemon> fillPokemonsWithImagePath(List<Pokemon> pokemons, ImageType imageType) {
+        List<Pokemon> pokemonsWithImagePath = new ArrayList<>();
+        if (pokemons != null) {
+            pokemons.forEach((pokemon) -> {
+                pokemon.setImagePath(getImagePathFor(pokemon, imageType));
+                pokemonsWithImagePath.add(pokemon);
+            });
+        }
+        return pokemonsWithImagePath;
     }
 }

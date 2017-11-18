@@ -43,6 +43,10 @@ public class Trainer {
     public void setPokeballs(int pokeballs) {
         this.pokeballs = pokeballs;
     }
+    
+    public boolean hasPokeballs() {
+        return pokeballs > 0;
+    }
 
     public List<Pokemon> getPokemons() {
         return Collections.unmodifiableList(pokemons);
@@ -50,6 +54,10 @@ public class Trainer {
     
     public void setPokemons(List<Pokemon> pokemons) {
         this.pokemons = pokemons;
+    }
+    
+    public int getPokemonCount() {
+        return pokemons.size();
     }
 
     public void earnBall() {

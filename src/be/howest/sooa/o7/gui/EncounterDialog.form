@@ -153,7 +153,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="pokemonsListLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Pokemons"/>
+        <Property name="text" type="java.lang.String" value="Pok&#xe9;mons"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="speciesIdLabel">
