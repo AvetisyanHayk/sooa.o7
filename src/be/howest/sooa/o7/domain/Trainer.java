@@ -19,7 +19,7 @@ public class Trainer {
     private List<Pokemon> pokemons;
 
     public Trainer(String name) {
-        this(name, 0);
+        this(name, INITIAL_BALLS);
     }
 
     public Trainer(String name, int pokeballs) {

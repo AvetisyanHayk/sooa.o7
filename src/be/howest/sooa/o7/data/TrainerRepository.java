@@ -6,9 +6,9 @@ import be.howest.sooa.o7.ex.TrainerIOException;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -31,10 +31,11 @@ public class TrainerRepository {
         checkDirectory();
     }
 
-    private void checkDirectory() {
+    final boolean checkDirectory() {
         if (!TRAINERS_DIR.exists()) {
-            TRAINERS_DIR.mkdir();
+            return TRAINERS_DIR.mkdir();
         }
+        return true;
     }
 
     public Trainer findByName(String name) {
@@ -55,19 +56,40 @@ public class TrainerRepository {
         return trainers;
     }
 
-    public void save(Trainer trainer) {
-        checkDirectory();
+    public boolean save(Trainer trainer) {
+        boolean trainersDirectoryExists = checkDirectory();
         File trainerDirectory
                 = new File(String.format(FMT_TRAINER_PATH, trainer.getName()));
-        if (!trainerDirectory.exists()) {
-            trainerDirectory.mkdir();
+        boolean trainerDirectoryExists = trainerDirectory.exists();
+        if (!trainerDirectoryExists) {
+            trainerDirectoryExists = trainerDirectory.mkdir();
         }
         savePokeballsFor(trainer);
         savePokemonsFor(trainer);
+        return trainersDirectoryExists && trainerDirectoryExists;
     }
 
-    public void updateTrainerName(Trainer trainer, String newName) throws TrainerIOException {
-        checkDirectory();
+    public boolean remove(Trainer trainer) {
+        File trainerDirectory
+                = new File(String.format(FMT_TRAINER_PATH, trainer.getName()));
+        if (trainerDirectory.exists()) {
+            return deleteDir(trainerDirectory);
+        }
+        return false;
+    }
+
+    private boolean deleteDir(File directory) {
+        File[] contents = directory.listFiles();
+        if (contents != null) {
+            for (File dir : contents) {
+                deleteDir(dir);
+            }
+        }
+        return directory.delete();
+    }
+
+    public boolean updateTrainerName(Trainer trainer, String newName) throws TrainerIOException {
+        boolean trainersDirectoryExists = checkDirectory();
         File newTrainerDirectory
                 = new File(String.format(FMT_TRAINER_PATH, newName));
         if (newTrainerDirectory.exists()) {
@@ -75,34 +97,40 @@ public class TrainerRepository {
         } else {
             File trainerDirectory
                     = new File(String.format(FMT_TRAINER_PATH, trainer.getName()));
-            if (trainerDirectory.exists()) {
-                trainerDirectory.renameTo(newTrainerDirectory);
+            boolean trainerDirectoryExists = trainerDirectory.exists();
+            if (trainerDirectoryExists) {
+                trainerDirectoryExists
+                        = trainerDirectory.renameTo(newTrainerDirectory);
+                return trainersDirectoryExists && trainerDirectoryExists;
             } else {
-                save(trainer);
+                return trainersDirectoryExists && save(trainer);
             }
         }
     }
 
     private Trainer build(String name) {
         if (name != null && !"".equals(name = name.trim())) {
-            Trainer trainer = new Trainer(name);
-            trainer.setPokeballs(getPokeballsFor(trainer));
-            trainer.setPokemons(getPokemonsFor(trainer));
-            return trainer;
+            File trainerDirectory
+                    = new File(String.format(FMT_TRAINER_PATH, name));
+            if (trainerDirectory.exists()) {
+                Trainer trainer = new Trainer(name);
+                trainer.setPokeballs(getPokeballsFor(trainer));
+                trainer.setPokemons(getPokemonsFor(trainer));
+                return trainer;
+            }
         }
         return null;
     }
 
     private int getPokeballsFor(Trainer trainer) {
-        String pokeballsPath = String.format(FMT_POKEBALLS_PATH, trainer.getName());
+        File pokeballsFile = new File(String.format(FMT_POKEBALLS_PATH, trainer.getName()));
         try (BufferedReader bufferedReader
-                = new BufferedReader(new FileReader(pokeballsPath))) {
-            String value = "";
+                = Files.newBufferedReader(pokeballsFile.toPath(), StandardCharsets.UTF_8)) {
+            StringBuilder sb = new StringBuilder();
             for (int eenByte; (eenByte = bufferedReader.read()) != -1;) {
-                value += (char) eenByte;
+                sb.append((char) eenByte);
             }
-            System.out.println("till here...");
-            return Integer.parseInt(value.trim());
+            return Integer.parseInt(sb.toString().trim());
         } catch (IOException | NumberFormatException ex) {
             System.out.println(ex.getMessage());
         }
@@ -110,10 +138,10 @@ public class TrainerRepository {
     }
 
     private List<Pokemon> getPokemonsFor(Trainer trainer) {
-        String pokemonsPath = String.format(FMT_POKEMONS_PATH, trainer.getName());
+        File pokemonsFile = new File(String.format(FMT_POKEMONS_PATH, trainer.getName()));
         List<Pokemon> pokemons = new ArrayList<>();
         try (BufferedReader bufferedReader
-                = new BufferedReader(new FileReader(pokemonsPath))) {
+                = Files.newBufferedReader(pokemonsFile.toPath(), StandardCharsets.UTF_8)) {
             Stream<String> lines = bufferedReader.lines();
             lines.map(String::trim).forEach((line) -> {
                 pokemons.add(readPokemon(line));
@@ -137,9 +165,9 @@ public class TrainerRepository {
     }
 
     private void savePokeballsFor(Trainer trainer) {
-        String pokeballsPath = String.format(FMT_POKEBALLS_PATH, trainer.getName());
+        File pokeballsFile = new File(String.format(FMT_POKEBALLS_PATH, trainer.getName()));
         try (BufferedWriter bufferedWriter
-                = new BufferedWriter(new FileWriter(pokeballsPath))) {
+                = Files.newBufferedWriter(pokeballsFile.toPath(), StandardCharsets.UTF_8)) {
             String pokeballs = String.valueOf(trainer.getPokeballs());
             bufferedWriter.write(pokeballs);
         } catch (IOException | NumberFormatException ex) {
@@ -148,10 +176,9 @@ public class TrainerRepository {
     }
 
     private void savePokemonsFor(Trainer trainer) {
-        String pokemonsPath = String.format(FMT_POKEMONS_PATH, trainer.getName());
-        List<Pokemon> pokemons = new ArrayList<>();
+        File pokemonsFile = new File(String.format(FMT_POKEMONS_PATH, trainer.getName()));
         try (BufferedWriter bufferedWriter
-                = new BufferedWriter(new FileWriter(pokemonsPath))) {
+                = Files.newBufferedWriter(pokemonsFile.toPath(), StandardCharsets.UTF_8)) {
             trainer.getPokemons().forEach((pokemon) -> {
                 try {
                     String pokemonId = String.valueOf(pokemon.getId());
