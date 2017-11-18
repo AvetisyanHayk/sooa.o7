@@ -1,8 +1,5 @@
 package be.howest.sooa.o8.data;
 
-import be.howest.sooa.o8.data.TrainerRepository;
-import be.howest.sooa.o8.data.PokemonRepository;
-import be.howest.sooa.o8.data.AbstractRepository;
 import be.howest.sooa.o8.domain.Pokemon;
 import be.howest.sooa.o8.domain.Trainer;
 import java.sql.SQLException;

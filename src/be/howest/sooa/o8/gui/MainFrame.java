@@ -119,7 +119,7 @@ public class MainFrame extends javax.swing.JFrame {
                     && encountersList.getSelectedValue() != null);
         });
     }
-    
+
     private void addCatchButtonActionListener() {
         catchButton.addActionListener((ActionEvent e) -> {
             JOptionPane.showMessageDialog(this, "Catch it! (not working yet)");
@@ -201,11 +201,6 @@ public class MainFrame extends javax.swing.JFrame {
     public void close() {
         setVisible(false);
         dispose();
-    }
-
-    private void showWarning(String message) {
-        JOptionPane.showMessageDialog(this, message, "Warning",
-                JOptionPane.WARNING_MESSAGE);
     }
 
     public boolean isConnected() {
@@ -305,15 +300,14 @@ public class MainFrame extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException
+                | InstantiationException
+                | IllegalAccessException
+                | javax.swing.UnsupportedLookAndFeelException ex) {
+            System.out.println(ex.getMessage());
         }
+        //</editor-fold>
+
         //</editor-fold>
 
         /* Create and display the form */
