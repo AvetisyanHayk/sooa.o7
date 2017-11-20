@@ -131,6 +131,7 @@ public class TrainerDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Trainer Info...");
+        setResizable(false);
 
         trainerNameLabel.setText("Name:");
 

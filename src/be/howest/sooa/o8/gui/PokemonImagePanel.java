@@ -13,7 +13,7 @@ import javax.swing.JPanel;
  */
 public class PokemonImagePanel extends JPanel {
 
-    private static final String IMAGE_PATH = "images/%s/%03d.%s";
+    private static final String IMAGE_PATH = "images/%1$s/%2$03d.%1$s";
 
     private ImageIcon image;
     private final JPanel imageContainer;
@@ -92,13 +92,13 @@ public class PokemonImagePanel extends JPanel {
 
     public static boolean imageExistsFor(Pokemon pokemon, ImageType imageType) {
         String path = String.format(IMAGE_PATH, imageType,
-                pokemon.getSpeciesId(), imageType);
+                pokemon.getSpeciesId());
         return new File(path).exists();
     }
 
     public static String getImagePathFor(Pokemon pokemon, ImageType imageType) {
         String path = String.format(IMAGE_PATH, imageType,
-                pokemon.getSpeciesId(), imageType);
+                pokemon.getSpeciesId());
         if (new File(path).exists()) {
             return path;
         }

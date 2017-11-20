@@ -101,6 +101,7 @@ public class TrainerFormDialog extends javax.swing.JDialog {
         messageLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setResizable(false);
 
         nameLabel.setText("Trainer Name");
 

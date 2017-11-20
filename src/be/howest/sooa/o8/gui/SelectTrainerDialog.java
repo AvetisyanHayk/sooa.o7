@@ -183,6 +183,7 @@ public class SelectTrainerDialog extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Select Trainer");
+        setResizable(false);
 
         trainersLabel.setText("Trainer");
 
